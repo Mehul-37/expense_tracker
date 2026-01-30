@@ -251,7 +251,7 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="text-2xl md:text-3xl font-bold text-success break-words">
+            <div className="text-2xl md:text-3xl font-bold text-success whitespace-nowrap overflow-hidden text-ellipsis">
               {formatCurrency(stats.balance)}
             </div>
             <div className="space-y-1.5 text-xs md:text-sm">
@@ -276,7 +276,7 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="text-2xl md:text-3xl font-bold break-words">
+            <div className="text-2xl md:text-3xl font-bold whitespace-nowrap overflow-hidden text-ellipsis">
               {formatCurrency(stats.monthlySpending)}
             </div>
             <div className="space-y-2">
