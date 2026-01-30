@@ -296,7 +296,7 @@ export default function Budget() {
 
           {/* AI Insights */}
           {!isEditing && (
-            <Card className="border-primary/30 bg-gradient-to-r from-primary/10 to-purple-500/10">
+            <Card className="border-primary/30 bg-gradient-to-r from-primary/10 to-amber-500/10">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-xl">

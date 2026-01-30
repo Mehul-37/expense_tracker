@@ -40,6 +40,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check for existing session on mount
     const initAuth = async () => {
+      // Load theme from localStorage or default to 'light'
+      const savedTheme = (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
+
+      // Apply theme to document
+      document.documentElement.setAttribute('data-theme', savedTheme)
+
       // Check for demo mode first
       const isDemoMode = localStorage.getItem('demo-mode') === 'true'
       const demoUserStr = localStorage.getItem('demo-user')
@@ -49,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const demoUser = JSON.parse(demoUserStr)
           setUser(demoUser)
           setPreferences({
-            theme: 'dark',
+            theme: savedTheme,
             currency: 'INR',
             notifications: true,
             language: 'en',
@@ -68,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (currentUser) {
         setUser(currentUser)
         setPreferences({
-          theme: 'dark',
+          theme: savedTheme,
           currency: 'INR',
           notifications: true,
           language: 'en',
@@ -102,6 +108,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription.unsubscribe()
     }
   }, [setUser, setPreferences, setLoading, setInitialized])
+
+  // Apply theme changes
+  useEffect(() => {
+    if (preferences?.theme) {
+      document.documentElement.setAttribute('data-theme', preferences.theme)
+    }
+  }, [preferences?.theme])
 
   const login = async (email: string, password: string) => {
     setLoading(true)

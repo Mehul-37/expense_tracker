@@ -13,9 +13,13 @@ export default {
         'surface-hover': '#252525',
         border: '#2a2a2a',
         primary: {
-          DEFAULT: '#6366f1',
-          hover: '#818cf8',
+          DEFAULT: '#10b981',
+          hover: '#34d399',
           foreground: '#ffffff',
+        },
+        gold: {
+          DEFAULT: '#f59e0b',
+          hover: '#fbbf24',
         },
         secondary: {
           DEFAULT: '#27272a',
@@ -45,7 +49,7 @@ export default {
           foreground: '#fafafa',
         },
         input: '#2a2a2a',
-        ring: '#6366f1',
+        ring: '#10b981',
         // Category colors
         category: {
           food: '#f97316',

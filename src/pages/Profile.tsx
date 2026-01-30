@@ -78,6 +78,19 @@ export default function Profile() {
     })
   }
 
+  const toggleTheme = () => {
+    if (!preferences) return
+    const newTheme = preferences.theme === 'dark' ? 'light' : 'dark'
+    setPreferences({
+      ...preferences,
+      theme: newTheme,
+    })
+    // Apply theme to document
+    document.documentElement.setAttribute('data-theme', newTheme)
+    // Persist to localStorage
+    localStorage.setItem('theme', newTheme)
+  }
+
   return (
     <div className="space-y-6 pb-24">
       {/* Edit Modal */}
@@ -220,11 +233,16 @@ export default function Profile() {
             <div className="flex items-center gap-3">
               <Moon className="h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="font-medium">Theme</p>
-                <p className="text-sm text-muted-foreground">Dark</p>
+                <p className="font-medium">Dark Mode</p>
+                <p className="text-sm text-muted-foreground">
+                  {preferences?.theme === 'dark' ? 'Enabled' : 'Disabled'}
+                </p>
               </div>
             </div>
-            <span className="text-sm text-muted-foreground">Default</span>
+            <Switch
+              checked={preferences?.theme === 'dark'}
+              onCheckedChange={toggleTheme}
+            />
           </div>
 
           <div className="flex items-center justify-between p-3 -mx-3 rounded-lg">

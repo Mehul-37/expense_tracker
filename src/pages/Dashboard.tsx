@@ -5,8 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { formatCurrency } from '@/lib/utils'
 import {
   Wallet,
-  TrendingUp,
-  Clock,
   Mic,
   Plus,
   ArrowUpRight,
@@ -249,130 +247,78 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Stats - Mobile-First Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-        {/* Balance Card - Featured on Mobile */}
-        <Card className="bg-gradient-to-br from-primary/20 to-purple-500/20 border-primary/30 touch-manipulation active:scale-[0.99] transition-transform">
-          <CardHeader className="pb-2 md:pb-3">
-            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Wallet className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-              <span>Net Balance</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 md:space-y-3">
-            <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-success whitespace-nowrap">
-              {formatCurrency(stats.balance)}
+      {/* Total Balance Card - Large Featured */}
+      <Card className="bg-primary text-primary-foreground border-none shadow-xl touch-manipulation active:scale-[0.99] transition-transform">
+        <CardContent className="p-6 md:p-8 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="text-sm md:text-base font-semibold opacity-90 uppercase tracking-wider">
+              Total Balance
             </div>
-            <div className="space-y-1 md:space-y-1.5 text-xs md:text-sm">
-              <div className="flex items-center gap-1.5 text-success">
-                <ArrowUpRight className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
-                <span className="whitespace-nowrap">Owed to you: {formatCurrency(stats.owedToYou)}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-danger">
-                <ArrowDownRight className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
-                <span className="whitespace-nowrap">You owe: {formatCurrency(stats.youOwe)}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <Wallet className="h-6 w-6 md:h-7 md:w-7 opacity-75" />
+          </div>
 
-        {/* Monthly Spending - Compact on Mobile */}
-        <Card className="touch-manipulation active:scale-[0.99] transition-transform">
-          <CardHeader className="pb-2 md:pb-3">
-            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-              <span>Monthly Spending</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 md:space-y-3">
-            <div className="text-xl md:text-2xl lg:text-3xl font-bold whitespace-nowrap">
-              {formatCurrency(stats.monthlySpending)}
-            </div>
-            <div className="space-y-1.5 md:space-y-2">
-              <div className="flex justify-between text-xs md:text-sm text-muted-foreground gap-2">
-                <span className="whitespace-nowrap">of {formatCurrency(stats.monthlyBudget)}</span>
-                <span className="flex-shrink-0 font-medium">
-                  {Math.round((stats.monthlySpending / stats.monthlyBudget) * 100)}%
-                </span>
+          {/* Balance Amount */}
+          <div className="text-4xl md:text-5xl lg:text-6xl font-bold leading-none">
+            {formatCurrency(stats.balance)}
+          </div>
+
+          {/* Income and Spent Grid */}
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            {/* Income */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 md:p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <ArrowUpRight className="h-4 w-4" />
+                <span className="text-xs md:text-sm font-semibold uppercase opacity-90 tracking-wide">Income</span>
               </div>
-              <div className="h-2 md:h-2.5 bg-surface rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all duration-500 ease-out"
-                  style={{
-                    width: `${Math.min(
-                      (stats.monthlySpending / stats.monthlyBudget) * 100,
-                      100
-                    )}%`,
-                  }}
-                />
+              <div className="text-xl md:text-2xl lg:text-3xl font-bold">
+                {formatCurrency(stats.owedToYou)}
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Pending Payments - Touch Optimized */}
-        <Card className="touch-manipulation active:scale-[0.99] transition-transform">
-          <CardHeader className="pb-2 md:pb-3">
-            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Clock className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-              <span>Pending Payments</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 md:space-y-3">
-            <div className="text-xl md:text-2xl lg:text-3xl font-bold">{stats.pendingPayments}</div>
-            <div className="space-y-1">
-              <p className="text-xs md:text-sm text-warning leading-relaxed">
-                {stats.pendingPayments > 0 ? `${stats.pendingPayments} payment${stats.pendingPayments > 1 ? 's' : ''} overdue` : 'No pending payments'}
-              </p>
-              <Button
-                variant="link"
-                className="p-0 h-auto text-primary text-xs md:text-sm touch-manipulation"
-                onClick={() => navigate('/groups')}
-              >
-                View Details →
-              </Button>
+            {/* Spent */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 md:p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <ArrowDownRight className="h-4 w-4" />
+                <span className="text-xs md:text-sm font-semibold uppercase opacity-90 tracking-wide">Spent</span>
+              </div>
+              <div className="text-xl md:text-2xl lg:text-3xl font-bold">
+                {formatCurrency(stats.youOwe)}
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Quick Actions - Touch-Optimized 48px Minimum */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-        <Button
-          variant="outline"
-          className="h-auto min-h-[64px] md:min-h-[72px] py-3 md:py-4 flex flex-col items-center justify-center gap-2 touch-manipulation active:scale-95 transition-transform text-sm md:text-base"
-          onClick={() => {
-            // Voice button - for now navigate to groups to use voice there
-            navigate('/groups')
-          }}
-        >
-          <Mic className="h-5 w-5 md:h-6 md:w-6 text-primary flex-shrink-0" />
-          <span className="font-medium">Add Voice</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-auto min-h-[64px] md:min-h-[72px] py-3 md:py-4 flex flex-col items-center justify-center gap-2 touch-manipulation active:scale-95 transition-transform text-sm md:text-base"
-          onClick={handleAddManual}
-        >
-          <Plus className="h-5 w-5 md:h-6 md:w-6 text-primary flex-shrink-0" />
-          <span className="font-medium">Add Manual</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-auto min-h-[64px] md:min-h-[72px] py-3 md:py-4 flex flex-col items-center justify-center gap-2 touch-manipulation active:scale-95 transition-transform text-sm md:text-base"
+      {/* Action Buttons - Two Large Buttons */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Voice Entry Button */}
+        <button
+          className="bg-accent hover:bg-accent/90 active:scale-[0.98] rounded-3xl p-8 md:p-10 flex flex-col items-center justify-center gap-4 transition-all touch-manipulation shadow-md"
           onClick={() => navigate('/groups')}
         >
-          <Wallet className="h-5 w-5 md:h-6 md:w-6 text-success flex-shrink-0" />
-          <span className="font-medium">Settle Up</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-auto min-h-[64px] md:min-h-[72px] py-3 md:py-4 flex flex-col items-center justify-center gap-2 touch-manipulation active:scale-95 transition-transform text-sm md:text-base"
-          onClick={() => navigate('/budget')}
+          <div className="bg-white/30 rounded-full p-4">
+            <Mic className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+          </div>
+          <div className="text-center">
+            <p className="font-bold text-lg md:text-xl">Voice Entry</p>
+            <p className="text-sm text-muted-foreground mt-1">AI-Powered</p>
+          </div>
+        </button>
+
+        {/* Manual Add Button */}
+        <button
+          className="bg-card hover:bg-surface-hover active:scale-[0.98] rounded-3xl p-8 md:p-10 flex flex-col items-center justify-center gap-4 transition-all touch-manipulation shadow-md border-2 border-border"
+          onClick={handleAddManual}
         >
-          <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-warning flex-shrink-0" />
-          <span className="font-medium">Budget</span>
-        </Button>
+          <div className="bg-accent/30 rounded-full p-4">
+            <Plus className="h-8 w-8 md:h-10 md:w-10 text-primary" />
+          </div>
+          <div className="text-center">
+            <p className="font-bold text-lg md:text-xl">Manual Add</p>
+            <p className="text-sm text-muted-foreground mt-1">Split Bill</p>
+          </div>
+        </button>
       </div>
 
       {/* Recent Activity - Scroll Optimized */}
@@ -445,7 +391,7 @@ export default function Dashboard() {
       </Card>
 
       {/* AI Insight Card - Mobile Optimized */}
-      <Card className="border-primary/30 bg-gradient-to-r from-primary/10 to-purple-500/10 touch-manipulation active:scale-[0.99] transition-transform">
+      <Card className="border-primary/30 bg-gradient-to-r from-primary/10 to-amber-500/10 touch-manipulation active:scale-[0.99] transition-transform">
         <CardContent className="p-4 md:p-6">
           <div className="flex items-start gap-3 md:gap-4">
             <div className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-primary/20 flex items-center justify-center text-2xl md:text-3xl flex-shrink-0">

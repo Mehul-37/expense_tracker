@@ -110,7 +110,7 @@ export default function Auth() {
             {/* Demo Login */}
             <Button
               variant="default"
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              className="w-full bg-primary hover:bg-primary-hover text-white font-semibold"
               onClick={handleDemoLogin}
             >
               DEMO - Skip Login
