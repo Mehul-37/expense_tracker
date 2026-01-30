@@ -251,17 +251,17 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="text-2xl md:text-3xl font-bold text-success whitespace-nowrap overflow-hidden text-ellipsis">
+            <div className="text-xl md:text-2xl font-bold text-success whitespace-nowrap">
               {formatCurrency(stats.balance)}
             </div>
-            <div className="space-y-1.5 text-xs md:text-sm">
+            <div className="space-y-1.5 text-xs">
               <div className="flex items-center gap-1 text-success">
                 <ArrowUpRight className="h-3 w-3 flex-shrink-0" />
-                <span className="truncate">Owed to you: {formatCurrency(stats.owedToYou)}</span>
+                <span className="whitespace-nowrap">Owed to you: {formatCurrency(stats.owedToYou)}</span>
               </div>
               <div className="flex items-center gap-1 text-danger">
                 <ArrowDownRight className="h-3 w-3 flex-shrink-0" />
-                <span className="truncate">You owe: {formatCurrency(stats.youOwe)}</span>
+                <span className="whitespace-nowrap">You owe: {formatCurrency(stats.youOwe)}</span>
               </div>
             </div>
           </CardContent>
@@ -276,13 +276,13 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="text-2xl md:text-3xl font-bold whitespace-nowrap overflow-hidden text-ellipsis">
+            <div className="text-xl md:text-2xl font-bold whitespace-nowrap">
               {formatCurrency(stats.monthlySpending)}
             </div>
             <div className="space-y-2">
-              <div className="flex justify-between text-xs md:text-sm text-muted-foreground">
-                <span className="truncate">of {formatCurrency(stats.monthlyBudget)}</span>
-                <span className="flex-shrink-0 ml-2">
+              <div className="flex justify-between text-xs text-muted-foreground gap-2">
+                <span className="whitespace-nowrap">of {formatCurrency(stats.monthlyBudget)}</span>
+                <span className="flex-shrink-0">
                   {Math.round((stats.monthlySpending / stats.monthlyBudget) * 100)}%
                 </span>
               </div>
@@ -310,14 +310,14 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="text-2xl md:text-3xl font-bold">{stats.pendingPayments}</div>
+            <div className="text-xl md:text-2xl font-bold">{stats.pendingPayments}</div>
             <div className="space-y-1">
-              <p className="text-xs md:text-sm text-warning">
+              <p className="text-xs text-warning">
                 {stats.pendingPayments > 0 ? `${stats.pendingPayments} payment${stats.pendingPayments > 1 ? 's' : ''} overdue` : 'No pending payments'}
               </p>
               <Button
                 variant="link"
-                className="p-0 h-auto text-primary text-xs md:text-sm"
+                className="p-0 h-auto text-primary text-xs"
                 onClick={() => navigate('/groups')}
               >
                 View Details →
