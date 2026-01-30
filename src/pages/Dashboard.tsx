@@ -181,35 +181,44 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 pb-24">
-      {/* Group Selector Modal */}
+    <div className="space-y-4 md:space-y-6 pb-20 md:pb-24">
+      {/* Group Selector Modal - Mobile Optimized Bottom Sheet */}
       {showGroupSelector && (
         <div
-          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center"
+          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end md:items-center justify-center"
           onClick={() => setShowGroupSelector(false)}
         >
           <div
-            className="bg-card rounded-lg p-6 w-[90%] max-w-md space-y-4"
+            className="bg-card rounded-t-3xl md:rounded-lg p-6 w-full md:w-[90%] max-w-md space-y-4 animate-slide-up"
             onClick={(e) => e.stopPropagation()}
+            style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
           >
-            <h2 className="text-lg font-bold">Select a Group</h2>
-            <div className="space-y-2">
+            {/* Bottom Sheet Handle (Mobile Only) */}
+            <div className="md:hidden w-12 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-2" />
+
+            <h2 className="text-lg md:text-xl font-bold">Select a Group</h2>
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
               {groups.map((group) => (
                 <button
                   key={group.id}
-                  className="w-full p-3 rounded-lg bg-surface hover:bg-surface-hover text-left transition-colors"
+                  className="w-full p-4 md:p-3 rounded-xl md:rounded-lg bg-surface hover:bg-surface-hover active:scale-98 text-left transition-all touch-manipulation"
+                  style={{ minHeight: '56px' }}
                   onClick={() => {
                     setSelectedGroup(group)
                     setShowGroupSelector(false)
                     setShowExpenseForm(true)
                   }}
                 >
-                  <p className="font-medium">{group.name}</p>
-                  <p className="text-sm text-muted-foreground">{group.type}</p>
+                  <p className="font-medium text-base md:text-sm">{group.name}</p>
+                  <p className="text-sm md:text-xs text-muted-foreground">{group.type}</p>
                 </button>
               ))}
             </div>
-            <Button variant="outline" className="w-full" onClick={() => setShowGroupSelector(false)}>
+            <Button
+              variant="outline"
+              className="w-full h-12 md:h-10 text-base md:text-sm"
+              onClick={() => setShowGroupSelector(false)}
+            >
               Cancel
             </Button>
           </div>
@@ -230,65 +239,65 @@ export default function Dashboard() {
         />
       )}
 
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold leading-tight">
             Hello, {user?.displayName?.split(' ')[0] || 'there'}! 👋
           </h1>
-          <p className="text-muted-foreground">Here's your financial overview</p>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">Here's your financial overview</p>
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Balance Card */}
-        <Card className="bg-gradient-to-br from-primary/20 to-purple-500/20 border-primary/30">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Wallet className="h-4 w-4" />
-              Net Balance
+      {/* Quick Stats - Mobile-First Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+        {/* Balance Card - Featured on Mobile */}
+        <Card className="bg-gradient-to-br from-primary/20 to-purple-500/20 border-primary/30 touch-manipulation active:scale-[0.99] transition-transform">
+          <CardHeader className="pb-2 md:pb-3">
+            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Wallet className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+              <span>Net Balance</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-xl md:text-2xl font-bold text-success whitespace-nowrap">
+          <CardContent className="space-y-2 md:space-y-3">
+            <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-success whitespace-nowrap">
               {formatCurrency(stats.balance)}
             </div>
-            <div className="space-y-1.5 text-xs">
-              <div className="flex items-center gap-1 text-success">
-                <ArrowUpRight className="h-3 w-3 flex-shrink-0" />
+            <div className="space-y-1 md:space-y-1.5 text-xs md:text-sm">
+              <div className="flex items-center gap-1.5 text-success">
+                <ArrowUpRight className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
                 <span className="whitespace-nowrap">Owed to you: {formatCurrency(stats.owedToYou)}</span>
               </div>
-              <div className="flex items-center gap-1 text-danger">
-                <ArrowDownRight className="h-3 w-3 flex-shrink-0" />
+              <div className="flex items-center gap-1.5 text-danger">
+                <ArrowDownRight className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
                 <span className="whitespace-nowrap">You owe: {formatCurrency(stats.youOwe)}</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Monthly Spending */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Monthly Spending
+        {/* Monthly Spending - Compact on Mobile */}
+        <Card className="touch-manipulation active:scale-[0.99] transition-transform">
+          <CardHeader className="pb-2 md:pb-3">
+            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+              <span>Monthly Spending</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-xl md:text-2xl font-bold whitespace-nowrap">
+          <CardContent className="space-y-2 md:space-y-3">
+            <div className="text-xl md:text-2xl lg:text-3xl font-bold whitespace-nowrap">
               {formatCurrency(stats.monthlySpending)}
             </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs text-muted-foreground gap-2">
+            <div className="space-y-1.5 md:space-y-2">
+              <div className="flex justify-between text-xs md:text-sm text-muted-foreground gap-2">
                 <span className="whitespace-nowrap">of {formatCurrency(stats.monthlyBudget)}</span>
-                <span className="flex-shrink-0">
+                <span className="flex-shrink-0 font-medium">
                   {Math.round((stats.monthlySpending / stats.monthlyBudget) * 100)}%
                 </span>
               </div>
-              <div className="h-2 bg-surface rounded-full overflow-hidden">
+              <div className="h-2 md:h-2.5 bg-surface rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary transition-all"
+                  className="h-full bg-primary transition-all duration-500 ease-out"
                   style={{
                     width: `${Math.min(
                       (stats.monthlySpending / stats.monthlyBudget) * 100,
@@ -301,23 +310,23 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Pending Payments */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Pending Payments
+        {/* Pending Payments - Touch Optimized */}
+        <Card className="touch-manipulation active:scale-[0.99] transition-transform">
+          <CardHeader className="pb-2 md:pb-3">
+            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Clock className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+              <span>Pending Payments</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-xl md:text-2xl font-bold">{stats.pendingPayments}</div>
+          <CardContent className="space-y-2 md:space-y-3">
+            <div className="text-xl md:text-2xl lg:text-3xl font-bold">{stats.pendingPayments}</div>
             <div className="space-y-1">
-              <p className="text-xs text-warning">
+              <p className="text-xs md:text-sm text-warning leading-relaxed">
                 {stats.pendingPayments > 0 ? `${stats.pendingPayments} payment${stats.pendingPayments > 1 ? 's' : ''} overdue` : 'No pending payments'}
               </p>
               <Button
                 variant="link"
-                className="p-0 h-auto text-primary text-xs"
+                className="p-0 h-auto text-primary text-xs md:text-sm touch-manipulation"
                 onClick={() => navigate('/groups')}
               >
                 View Details →
@@ -327,68 +336,74 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Quick Actions - Touch-Optimized 48px Minimum */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
         <Button
           variant="outline"
-          className="h-auto py-4 flex flex-col items-center gap-2"
+          className="h-auto min-h-[64px] md:min-h-[72px] py-3 md:py-4 flex flex-col items-center justify-center gap-2 touch-manipulation active:scale-95 transition-transform text-sm md:text-base"
           onClick={() => {
             // Voice button - for now navigate to groups to use voice there
             navigate('/groups')
           }}
         >
-          <Mic className="h-5 w-5 text-primary" />
-          <span>Add Voice</span>
+          <Mic className="h-5 w-5 md:h-6 md:w-6 text-primary flex-shrink-0" />
+          <span className="font-medium">Add Voice</span>
         </Button>
         <Button
           variant="outline"
-          className="h-auto py-4 flex flex-col items-center gap-2"
+          className="h-auto min-h-[64px] md:min-h-[72px] py-3 md:py-4 flex flex-col items-center justify-center gap-2 touch-manipulation active:scale-95 transition-transform text-sm md:text-base"
           onClick={handleAddManual}
         >
-          <Plus className="h-5 w-5 text-primary" />
-          <span>Add Manual</span>
+          <Plus className="h-5 w-5 md:h-6 md:w-6 text-primary flex-shrink-0" />
+          <span className="font-medium">Add Manual</span>
         </Button>
         <Button
           variant="outline"
-          className="h-auto py-4 flex flex-col items-center gap-2"
+          className="h-auto min-h-[64px] md:min-h-[72px] py-3 md:py-4 flex flex-col items-center justify-center gap-2 touch-manipulation active:scale-95 transition-transform text-sm md:text-base"
           onClick={() => navigate('/groups')}
         >
-          <Wallet className="h-5 w-5 text-success" />
-          <span>Settle Up</span>
+          <Wallet className="h-5 w-5 md:h-6 md:w-6 text-success flex-shrink-0" />
+          <span className="font-medium">Settle Up</span>
         </Button>
         <Button
           variant="outline"
-          className="h-auto py-4 flex flex-col items-center gap-2"
+          className="h-auto min-h-[64px] md:min-h-[72px] py-3 md:py-4 flex flex-col items-center justify-center gap-2 touch-manipulation active:scale-95 transition-transform text-sm md:text-base"
           onClick={() => navigate('/budget')}
         >
-          <TrendingUp className="h-5 w-5 text-warning" />
-          <span>Budget</span>
+          <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-warning flex-shrink-0" />
+          <span className="font-medium">Budget</span>
         </Button>
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Activity - Scroll Optimized */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3 md:pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
-              Recent Activity
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <span className="h-2 w-2 md:h-2.5 md:w-2.5 rounded-full bg-success animate-pulse flex-shrink-0" />
+              <span>Recent Activity</span>
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/activity')}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 md:h-9 px-3 md:px-4 text-xs md:text-sm touch-manipulation"
+              onClick={() => navigate('/activity')}
+            >
               View All
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-2 md:space-y-3">
           {recentExpenses.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No recent activity</p>
+            <div className="text-center py-12 md:py-16 text-muted-foreground">
+              <div className="text-4xl md:text-5xl mb-4">💸</div>
+              <p className="text-sm md:text-base mb-2">No recent activity</p>
               <Button
                 variant="link"
-                className="mt-2"
+                className="mt-2 text-sm md:text-base touch-manipulation"
                 onClick={() => navigate('/groups')}
               >
-                Join or create a group to get started
+                Join or create a group to get started →
               </Button>
             </div>
           ) : (
@@ -399,26 +414,26 @@ export default function Dashboard() {
               return (
                 <div
                   key={expense.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-surface hover:bg-surface-hover transition-colors"
+                  className="flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-lg bg-surface hover:bg-surface-hover active:bg-surface-hover/80 transition-all touch-manipulation min-h-[72px]"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full flex items-center justify-center bg-primary/20 text-primary">
+                  <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                    <div className="h-12 w-12 md:h-14 md:w-14 rounded-full flex items-center justify-center bg-primary/20 text-primary text-xl md:text-2xl flex-shrink-0">
                       🧾
                     </div>
-                    <div>
-                      <p className="font-medium">{expense.description}</p>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm md:text-base truncate">{expense.description}</p>
+                      <p className="text-xs md:text-sm text-muted-foreground truncate">
                         {isPayer ? 'You paid' : 'Expense'} • {formatRelativeTime(expense.createdAt)}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium">
+                  <div className="text-right flex-shrink-0 ml-2">
+                    <p className="font-semibold text-sm md:text-base whitespace-nowrap">
                       {formatCurrency(expense.amount)}
                     </p>
                     {userSplit && (
-                      <p className="text-sm text-muted-foreground">
-                        Your share: {formatCurrency(userSplit.amount)}
+                      <p className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">
+                        Share: {formatCurrency(userSplit.amount)}
                       </p>
                     )}
                   </div>
@@ -429,22 +444,22 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      {/* AI Insight Card */}
-      <Card className="border-primary/30 bg-gradient-to-r from-primary/10 to-purple-500/10">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-xl">
+      {/* AI Insight Card - Mobile Optimized */}
+      <Card className="border-primary/30 bg-gradient-to-r from-primary/10 to-purple-500/10 touch-manipulation active:scale-[0.99] transition-transform">
+        <CardContent className="p-4 md:p-6">
+          <div className="flex items-start gap-3 md:gap-4">
+            <div className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-primary/20 flex items-center justify-center text-2xl md:text-3xl flex-shrink-0">
               💡
             </div>
-            <div>
-              <p className="font-medium">AI Insight</p>
-              <p className="text-sm text-muted-foreground mt-1">
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm md:text-base">AI Insight</p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1 md:mt-1.5 leading-relaxed">
                 You typically spend 2x more on weekends. You've spent ₹800
                 already this Saturday. Consider setting a weekend budget limit.
               </p>
               <Button
                 variant="link"
-                className="p-0 h-auto text-primary mt-2"
+                className="p-0 h-auto text-primary mt-2 md:mt-3 text-xs md:text-sm touch-manipulation"
                 onClick={() => navigate('/budget')}
               >
                 Set Weekend Budget →
