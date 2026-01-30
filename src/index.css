@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+@theme {
+  /* Dark theme colors */
+  --color-background: #0f0f0f;
+  --color-foreground: #fafafa;
+  --color-card: #1a1a1a;
+  --color-card-foreground: #fafafa;
+  --color-surface: #1a1a1a;
+  --color-surface-hover: #252525;
+  --color-popover: #1a1a1a;
+  --color-popover-foreground: #fafafa;
+  --color-primary: #6366f1;
+  --color-primary-hover: #818cf8;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #27272a;
+  --color-secondary-foreground: #fafafa;
+  --color-muted: #27272a;
+  --color-muted-foreground: #a1a1aa;
+  --color-accent: #27272a;
+  --color-accent-foreground: #fafafa;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fafafa;
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --color-border: #2a2a2a;
+  --color-input: #2a2a2a;
+  --color-ring: #6366f1;
+  --radius: 0.75rem;
+
+  /* Category colors */
+  --color-category-food: #f97316;
+  --color-category-utilities: #3b82f6;
+  --color-category-travel: #22c55e;
+  --color-category-entertainment: #a855f7;
+  --color-category-shopping: #eab308;
+  --color-category-health: #ef4444;
+  --color-category-education: #06b6d4;
+  --color-category-miscellaneous: #737373;
+
+  /* Custom animations */
+  --animate-pulse-ring: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-up: slide-up 0.3s ease-out;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.5; }
+  100% { transform: scale(0.95); opacity: 1; }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  0% { transform: translateY(100%); }
+  100% { transform: translateY(0); }
+}
+
+/* Base styles */
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface-hover);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-muted-foreground);
+}
+
+/* Glass morphism effect for cards */
+.glass {
+  background-color: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(to right, var(--color-primary), #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Voice button pulse animation */
+.voice-pulse {
+  position: relative;
+}
+
+.voice-pulse::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  animation: var(--animate-pulse-ring);
+}
+
+/* Category badge styles */
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.category-food {
+  background-color: color-mix(in srgb, var(--color-category-food) 20%, transparent);
+  color: var(--color-category-food);
+}
+.category-utilities {
+  background-color: color-mix(in srgb, var(--color-category-utilities) 20%, transparent);
+  color: var(--color-category-utilities);
+}
+.category-travel {
+  background-color: color-mix(in srgb, var(--color-category-travel) 20%, transparent);
+  color: var(--color-category-travel);
+}
+.category-entertainment {
+  background-color: color-mix(in srgb, var(--color-category-entertainment) 20%, transparent);
+  color: var(--color-category-entertainment);
+}
+.category-shopping {
+  background-color: color-mix(in srgb, var(--color-category-shopping) 20%, transparent);
+  color: var(--color-category-shopping);
+}
+.category-health {
+  background-color: color-mix(in srgb, var(--color-category-health) 20%, transparent);
+  color: var(--color-category-health);
+}
+.category-education {
+  background-color: color-mix(in srgb, var(--color-category-education) 20%, transparent);
+  color: var(--color-category-education);
+}
+.category-miscellaneous {
+  background-color: color-mix(in srgb, var(--color-category-miscellaneous) 20%, transparent);
+  color: var(--color-category-miscellaneous);
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Safe area padding for mobile */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
