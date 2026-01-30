@@ -264,7 +264,7 @@ function ActivityCard({ expense, currentUserId }: { expense: Expense; currentUse
                 <p className="font-medium">{expense.description}</p>
               </div>
               <p className="text-sm text-muted-foreground">
-                {isPaidByUser ? 'You paid' : 'Expense'} • {formatDate(expense.createdAt, 'relative')}
+                {isPaidByUser ? 'You paid' : 'Expense'} • {formatDate(new Date(expense.createdAt).getTime(), 'relative')}
               </p>
               <Badge
                 variant={isSettled ? 'success' : 'warning'}

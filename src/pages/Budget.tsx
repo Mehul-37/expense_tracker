@@ -10,7 +10,7 @@ import { CATEGORIES } from '@/constants/categories'
 import { budgetService, expensesService } from '@/services/supabase/database'
 import { useAuth } from '@/contexts/AuthContext'
 import { Loader2, Edit2, Save, X } from 'lucide-react'
-import type { Expense, ExpenseCategory } from '@/types'
+import type { Expense } from '@/types'
 
 interface Budget {
   id: string
@@ -45,7 +45,7 @@ export default function Budget() {
           setEditedLimit(userBudget.monthlyLimit.toString())
           const catEdits: Record<string, string> = {}
           Object.entries(userBudget.categories).forEach(([key, val]) => {
-            catEdits[key] = val.toString()
+            catEdits[key] = (val as number).toString()
           })
           setEditedCategories(catEdits)
         }
