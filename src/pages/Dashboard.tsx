@@ -244,24 +244,24 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Balance Card */}
         <Card className="bg-gradient-to-br from-primary/20 to-purple-500/20 border-primary/30">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Wallet className="h-4 w-4" />
               Net Balance
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-success">
+          <CardContent className="space-y-3">
+            <div className="text-2xl md:text-3xl font-bold text-success break-words">
               {formatCurrency(stats.balance)}
             </div>
-            <div className="mt-2 space-y-1 text-sm">
+            <div className="space-y-1.5 text-xs md:text-sm">
               <div className="flex items-center gap-1 text-success">
-                <ArrowUpRight className="h-3 w-3" />
-                Owed to you: {formatCurrency(stats.owedToYou)}
+                <ArrowUpRight className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">Owed to you: {formatCurrency(stats.owedToYou)}</span>
               </div>
               <div className="flex items-center gap-1 text-danger">
-                <ArrowDownRight className="h-3 w-3" />
-                You owe: {formatCurrency(stats.youOwe)}
+                <ArrowDownRight className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">You owe: {formatCurrency(stats.youOwe)}</span>
               </div>
             </div>
           </CardContent>
@@ -269,20 +269,20 @@ export default function Dashboard() {
 
         {/* Monthly Spending */}
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               Monthly Spending
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
+          <CardContent className="space-y-3">
+            <div className="text-2xl md:text-3xl font-bold break-words">
               {formatCurrency(stats.monthlySpending)}
             </div>
-            <div className="mt-2">
-              <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                <span>of {formatCurrency(stats.monthlyBudget)}</span>
-                <span>
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs md:text-sm text-muted-foreground">
+                <span className="truncate">of {formatCurrency(stats.monthlyBudget)}</span>
+                <span className="flex-shrink-0 ml-2">
                   {Math.round((stats.monthlySpending / stats.monthlyBudget) * 100)}%
                 </span>
               </div>
@@ -303,22 +303,26 @@ export default function Dashboard() {
 
         {/* Pending Payments */}
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4" />
               Pending Payments
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.pendingPayments}</div>
-            <p className="text-sm text-warning mt-2">1 payment overdue</p>
-            <Button
-              variant="link"
-              className="p-0 h-auto text-primary mt-1"
-              onClick={() => navigate('/groups')}
-            >
-              View Details →
-            </Button>
+          <CardContent className="space-y-3">
+            <div className="text-2xl md:text-3xl font-bold">{stats.pendingPayments}</div>
+            <div className="space-y-1">
+              <p className="text-xs md:text-sm text-warning">
+                {stats.pendingPayments > 0 ? `${stats.pendingPayments} payment${stats.pendingPayments > 1 ? 's' : ''} overdue` : 'No pending payments'}
+              </p>
+              <Button
+                variant="link"
+                className="p-0 h-auto text-primary text-xs md:text-sm"
+                onClick={() => navigate('/groups')}
+              >
+                View Details →
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
