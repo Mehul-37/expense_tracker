@@ -1,56 +1,65 @@
 @import "tailwindcss";
 
 @theme {
-  /* Light theme colors (default) - Green/Earthy */
-  --color-background: #f5f1e8;
-  --color-foreground: #1a1a1a;
+  /* Light theme colors (default) - Pistachio Theme */
+  --color-background: #F8F7F2;
+  --color-foreground: #2D3329;
   --color-card: #ffffff;
-  --color-card-foreground: #1a1a1a;
-  --color-surface: #fefdfb;
-  --color-surface-hover: #f0ece3;
+  --color-card-foreground: #2D3329;
+  --color-surface: #ffffff;
+  --color-surface-hover: #F7FAF3;
   --color-popover: #ffffff;
-  --color-popover-foreground: #1a1a1a;
-  --color-primary: #2d5016;
-  --color-primary-hover: #3a6b1d;
-  --color-gold: #c7e6bd;
-  --color-gold-hover: #b3d9a8;
+  --color-popover-foreground: #2D3329;
+  --color-primary: #93C572;
+  --color-primary-hover: #7CB342;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #e8f5e1;
-  --color-secondary-foreground: #1a1a1a;
-  --color-muted: #f0ece3;
-  --color-muted-foreground: #6b7062;
-  --color-accent: #c7e6bd;
-  --color-accent-foreground: #1a1a1a;
+  --color-secondary: #D1E8C4;
+  --color-secondary-foreground: #2D3329;
+  --color-muted: #F7FAF3;
+  --color-muted-foreground: #74796F;
+  --color-accent: #D1E8C4;
+  --color-accent-foreground: #2D3329;
   --color-destructive: #dc2626;
   --color-destructive-foreground: #ffffff;
-  --color-success: #16a34a;
+  --color-success: #7CB342;
   --color-danger: #dc2626;
   --color-warning: #ea580c;
-  --color-border: #e0dcd3;
+  --color-border: #EEF6E8;
   --color-input: #ffffff;
-  --color-ring: #2d5016;
+  --color-ring: #93C572;
   --radius: 1rem;
+
+  /* Pistachio palette */
+  --color-pistachio-50: #F7FAF3;
+  --color-pistachio-100: #EEF6E8;
+  --color-pistachio-200: #D1E8C4;
+  --color-pistachio-300: #B4DAA0;
+  --color-pistachio-400: #93C572;
+  --color-pistachio-500: #7CB342;
 }
 
 /* Dark theme */
 [data-theme="dark"] {
-  --color-background: #0f0f0f;
-  --color-foreground: #fafafa;
-  --color-card: #1a1a1a;
-  --color-card-foreground: #fafafa;
-  --color-surface: #1a1a1a;
-  --color-surface-hover: #252525;
-  --color-popover: #1a1a1a;
-  --color-popover-foreground: #fafafa;
-  --color-secondary: #27272a;
-  --color-secondary-foreground: #fafafa;
-  --color-muted: #27272a;
-  --color-muted-foreground: #a1a1aa;
-  --color-accent: #27272a;
-  --color-accent-foreground: #fafafa;
-  --color-border: #2a2a2a;
-  --color-input: #2a2a2a;
-  --color-ring: #10b981;
+  --color-background: #1A1C18;
+  --color-foreground: #E3E3DC;
+  --color-card: #232620;
+  --color-card-foreground: #E3E3DC;
+  --color-surface: #232620;
+  --color-surface-hover: #2A2E26;
+  --color-popover: #232620;
+  --color-popover-foreground: #E3E3DC;
+  --color-primary: #93C572;
+  --color-primary-hover: #7CB342;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #2A2E26;
+  --color-secondary-foreground: #E3E3DC;
+  --color-muted: #2A2E26;
+  --color-muted-foreground: #90928B;
+  --color-accent: #2A2E26;
+  --color-accent-foreground: #E3E3DC;
+  --color-border: #3A3D36;
+  --color-input: #2A2E26;
+  --color-ring: #93C572;
   --radius: 1rem;
 
   /* Category colors */
@@ -217,6 +226,21 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Progress ring for circular charts */
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring__circle {
+  transition: stroke-dashoffset 0.35s;
+  transform-origin: 50% 50%;
+}
+
+/* Soft shadow for cards */
+.shadow-soft {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
 }
 
 /* ===== MOBILE-SPECIFIC UTILITIES ===== */

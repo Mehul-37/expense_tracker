@@ -23,14 +23,27 @@ export interface ExpenseParseResult {
   rawResponse?: string
 }
 
-const EXPENSE_PARSER_PROMPT = `You are an expense parsing assistant. Parse the user's voice command into structured expense data.
+const EXPENSE_PARSER_PROMPT = `You are an expense parsing assistant for an Indian expense tracking app. Parse the user's voice command into structured expense data.
+
+IMPORTANT: The input comes from speech recognition which may have errors, mishearings, or partial words. Be flexible and try to understand the intent even with imperfect transcription.
 
 Categories available: food, utilities, travel, entertainment, shopping, health, education, miscellaneous
 
+Common Indian terms to recognize:
+- Food: chai, samosa, biryani, thali, dosa, paratha, Zomato, Swiggy, Dominos, Pizza Hut, mess, canteen, dhaba
+- Travel: auto, rickshaw, Ola, Uber, metro, bus, petrol, diesel, parking
+- Utilities: bijli (electricity), pani (water), WiFi, internet, recharge, mobile
+- Shopping: Amazon, Flipkart, Myntra, clothes, groceries, kirana
+- Entertainment: Netflix, movies, PVR, INOX, Hotstar
+
+Amount recognition:
+- "5 hundred" = 500, "1 thousand" = 1000, "1.5k" = 1500
+- Numbers may be misheard: "fight hundred" = "five hundred" = 500
+
 Extract:
-1. description: What was purchased/paid for
-2. amount: The monetary amount (in INR)
-3. category: One of the categories above
+1. description: What was purchased/paid for (clean up the description)
+2. amount: The monetary amount (in INR) - extract numbers even if spoken oddly
+3. category: Best matching category from above
 4. splitType: "equal" for splitting equally, "exact" for custom amounts
 
 Respond ONLY with valid JSON in this format:
@@ -42,7 +55,7 @@ Respond ONLY with valid JSON in this format:
   "confidence": number (0-1)
 }
 
-If you cannot parse the expense, respond with:
+If you truly cannot parse any expense information, respond with:
 {
   "error": "reason"
 }
@@ -51,6 +64,9 @@ Examples:
 - "Add 500 for dinner" -> {"description": "dinner", "amount": 500, "category": "food", "splitType": "equal", "confidence": 0.95}
 - "Split 1200 for electricity bill" -> {"description": "electricity bill", "amount": 1200, "category": "utilities", "splitType": "equal", "confidence": 0.9}
 - "Paid 2000 for movie tickets" -> {"description": "movie tickets", "amount": 2000, "category": "entertainment", "splitType": "equal", "confidence": 0.9}
+- "split 1200 for dinner at Dominos with the roomies" -> {"description": "Dominos dinner", "amount": 1200, "category": "food", "splitType": "equal", "confidence": 0.95}
+- "spent fight hundred on auto" -> {"description": "auto ride", "amount": 500, "category": "travel", "splitType": "equal", "confidence": 0.85}
+- "1.5k for groceries" -> {"description": "groceries", "amount": 1500, "category": "shopping", "splitType": "equal", "confidence": 0.9}
 `
 
 export async function parseExpenseFromVoice(transcript: string): Promise<ExpenseParseResult> {
@@ -62,7 +78,7 @@ export async function parseExpenseFromVoice(transcript: string): Promise<Expense
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
     const result = await model.generateContent([
       EXPENSE_PARSER_PROMPT,
@@ -142,7 +158,7 @@ export async function generateSpendingInsights(
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
     const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0)
     const categoryTotals: Record<string, number> = {}
@@ -201,19 +217,43 @@ export async function processVoiceCommand(
 
   const lowerTranscript = transcript.toLowerCase()
 
-  // Check for expense-related keywords
-  if (
-    lowerTranscript.includes('add') ||
-    lowerTranscript.includes('spent') ||
-    lowerTranscript.includes('paid') ||
-    lowerTranscript.includes('split') ||
-    /\d+/.test(transcript)
-  ) {
+  // Expense-related keywords (expanded for Indian English and common mishearings)
+  const expenseKeywords = [
+    'add', 'spent', 'paid', 'pay', 'split', 'buy', 'bought', 'purchase',
+    'order', 'ordered', 'book', 'booked', 'expense', 'cost',
+    'rupees', 'rupee', 'rs', 'inr', 'hundred', 'thousand', 'lakh',
+    'for', 'on', 'at', // prepositions often used with expenses
+    'dinner', 'lunch', 'breakfast', 'food', 'grocery', 'groceries',
+    'uber', 'ola', 'auto', 'cab', 'taxi', 'metro', 'bus',
+    'dominos', 'domino', 'pizza', 'zomato', 'swiggy',
+    'amazon', 'flipkart', 'myntra',
+    'netflix', 'movie', 'movies',
+    'recharge', 'bill', 'rent', 'electricity', 'water', 'wifi',
+  ]
+
+  // Check if any expense keyword is present or if there's a number
+  const hasExpenseKeyword = expenseKeywords.some(keyword =>
+    lowerTranscript.includes(keyword)
+  )
+  const hasNumber = /\d+/.test(transcript) ||
+    lowerTranscript.includes('hundred') ||
+    lowerTranscript.includes('thousand') ||
+    lowerTranscript.includes('k ') ||
+    lowerTranscript.endsWith('k')
+
+  if (hasExpenseKeyword || hasNumber) {
     const result = await parseExpenseFromVoice(transcript)
     if (result.success && result.expense) {
       return {
         type: 'add_expense',
         data: result.expense,
+      }
+    }
+    // Even if parsing partially failed, if there was a number, try harder
+    if (hasNumber && result.error) {
+      return {
+        type: 'unknown',
+        response: `I heard "${transcript}" but couldn't fully understand. Try: "Add [amount] for [description]"`,
       }
     }
   }
@@ -223,7 +263,9 @@ export async function processVoiceCommand(
     lowerTranscript.includes('how much') ||
     lowerTranscript.includes('owe') ||
     lowerTranscript.includes('balance') ||
-    lowerTranscript.includes('show')
+    lowerTranscript.includes('show') ||
+    lowerTranscript.includes('total') ||
+    lowerTranscript.includes('kitna') // Hindi
   ) {
     return {
       type: 'query',
@@ -234,7 +276,9 @@ export async function processVoiceCommand(
   // Check for settle keywords
   if (
     lowerTranscript.includes('settle') ||
-    lowerTranscript.includes('pay back')
+    lowerTranscript.includes('pay back') ||
+    lowerTranscript.includes('clear') ||
+    lowerTranscript.includes('dues')
   ) {
     return {
       type: 'settle',
@@ -244,6 +288,6 @@ export async function processVoiceCommand(
 
   return {
     type: 'unknown',
-    response: "I didn't understand that. Try saying something like 'Add 500 for dinner' or 'How much do I owe?'",
+    response: `I heard "${transcript}". Try saying: "Add 500 for dinner" or "Split 1000 for groceries"`,
   }
 }
