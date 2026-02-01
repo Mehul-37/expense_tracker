@@ -69,11 +69,111 @@ Examples:
 - "1.5k for groceries" -> {"description": "groceries", "amount": 1500, "category": "shopping", "splitType": "equal", "confidence": 0.9}
 `
 
+// Fallback regex-based parser for when Gemini API is unavailable
+function parseExpenseLocally(transcript: string): ParsedExpense | null {
+  const lower = transcript.toLowerCase()
+
+  // Extract amount using various patterns
+  let amount: number | null = null
+
+  // Pattern: "500", "1000", "1500"
+  const numMatch = transcript.match(/(\d+(?:\.\d+)?)\s*(?:k|K)?/)
+  if (numMatch) {
+    amount = parseFloat(numMatch[1])
+    // Handle "k" suffix (1.5k = 1500)
+    if (lower.includes('k') && amount < 100) {
+      amount *= 1000
+    }
+  }
+
+  // Pattern: "five hundred", "two thousand"
+  const wordNumbers: Record<string, number> = {
+    'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+    'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+    'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50,
+    'fight': 5, 'tree': 3, // common mishearings
+  }
+
+  if (!amount) {
+    for (const [word, num] of Object.entries(wordNumbers)) {
+      if (lower.includes(word + ' hundred')) {
+        amount = num * 100
+        break
+      }
+      if (lower.includes(word + ' thousand')) {
+        amount = num * 1000
+        break
+      }
+    }
+  }
+
+  if (!amount) return null
+
+  // Extract description - text after "for" or "on"
+  let description = 'expense'
+  const forMatch = transcript.match(/(?:for|on)\s+(.+?)(?:\s+with|\s+at|\s*$)/i)
+  if (forMatch) {
+    description = forMatch[1].trim()
+  } else {
+    // Try to get description from common patterns
+    const descPatterns = [
+      /(?:add|paid|spent|split)\s+\d+\s+(?:for|on)\s+(.+)/i,
+      /(.+?)\s+\d+/i,
+    ]
+    for (const pattern of descPatterns) {
+      const match = transcript.match(pattern)
+      if (match && match[1]) {
+        description = match[1].replace(/^(?:add|paid|spent|split)\s*/i, '').trim()
+        if (description) break
+      }
+    }
+  }
+
+  // Clean up description
+  description = description.replace(/^\s*(for|on|at)\s*/i, '').trim() || 'expense'
+
+  // Detect category from keywords
+  const categoryKeywords: Record<string, string[]> = {
+    food: ['dinner', 'lunch', 'breakfast', 'food', 'meal', 'eat', 'pizza', 'dominos', 'zomato', 'swiggy', 'biryani', 'chai', 'coffee', 'snack', 'restaurant'],
+    travel: ['uber', 'ola', 'auto', 'cab', 'taxi', 'metro', 'bus', 'petrol', 'diesel', 'parking', 'ride', 'travel'],
+    utilities: ['electricity', 'water', 'wifi', 'internet', 'bill', 'recharge', 'mobile', 'phone', 'rent', 'gas'],
+    entertainment: ['movie', 'movies', 'netflix', 'hotstar', 'pvr', 'inox', 'game', 'concert'],
+    shopping: ['amazon', 'flipkart', 'myntra', 'clothes', 'groceries', 'grocery', 'shopping', 'kirana'],
+    health: ['medicine', 'doctor', 'hospital', 'pharmacy', 'gym', 'health'],
+  }
+
+  let category = 'miscellaneous'
+  for (const [cat, keywords] of Object.entries(categoryKeywords)) {
+    if (keywords.some(kw => lower.includes(kw))) {
+      category = cat
+      break
+    }
+  }
+
+  return {
+    description,
+    amount,
+    category,
+    splitType: lower.includes('split') ? 'equal' : 'equal',
+    confidence: 0.75,
+  }
+}
+
 export async function parseExpenseFromVoice(transcript: string): Promise<ExpenseParseResult> {
+  // First try local parsing as fallback
+  const localResult = parseExpenseLocally(transcript)
+
   if (!genAI) {
+    // No API - use local parser
+    if (localResult) {
+      return {
+        success: true,
+        expense: localResult,
+      }
+    }
     return {
       success: false,
-      error: 'Gemini API not configured',
+      error: 'Could not parse expense',
     }
   }
 
@@ -120,6 +220,13 @@ export async function parseExpenseFromVoice(transcript: string): Promise<Expense
     }
   } catch (error) {
     console.error('Gemini API error:', error)
+    // Fallback to local parser when API fails
+    if (localResult) {
+      return {
+        success: true,
+        expense: localResult,
+      }
+    }
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to parse expense',
@@ -211,10 +318,6 @@ export async function processVoiceCommand(
   data?: ParsedExpense
   response?: string
 }> {
-  if (!genAI) {
-    return { type: 'unknown', response: 'AI not configured' }
-  }
-
   const lowerTranscript = transcript.toLowerCase()
 
   // Expense-related keywords (expanded for Indian English and common mishearings)
