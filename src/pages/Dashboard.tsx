@@ -78,9 +78,6 @@ function CircularProgress({
 function WeeklyTrendsChart({ data }: { data: number[] }) {
   const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
   const maxValue = Math.max(...data, 1)
-  const today = new Date().getDay()
-  // Convert Sunday=0 to index 6, Monday=1 to index 0, etc.
-  const todayIndex = today === 0 ? 6 : today - 1
 
   return (
     <div className="h-40 flex items-end justify-between gap-2.5 pt-2">
