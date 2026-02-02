@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ROUTES } from '@/constants'
 import { Loader2, Eye, EyeOff } from 'lucide-react'
 import { initializeDemoData } from '@/services/demo'
+import logo from '@/assets/logo.jpg'
+
 
 type AuthMode = 'login' | 'register'
 
@@ -90,8 +92,8 @@ export default function Auth() {
       <div className="w-full max-w-md space-y-6">
         {/* Logo and Title */}
         <div className="text-center space-y-2">
-          <div className="text-5xl mb-4">💰</div>
-          <h1 className="text-3xl font-bold gradient-text">SplitUp</h1>
+          <img src={logo} alt="SplitUp Logo" className="w-24 h-24 mx-auto mb-4 rounded-full object-cover shadow-lg" />
+          <h1 className="text-3xl font-bold text-primary">SplitUp</h1>
           <p className="text-muted-foreground">
             Your AI-powered expense tracking companion
           </p>

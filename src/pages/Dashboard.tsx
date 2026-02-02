@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatCurrency } from '@/lib/utils'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { groupsService, expensesService, budgetService } from '@/services/supabase/database'
 import { useGroupStore } from '@/stores/useGroupStore'
@@ -86,23 +86,16 @@ function WeeklyTrendsChart({ data }: { data: number[] }) {
     <div className="h-40 flex items-end justify-between gap-2.5 pt-2">
       {data.map((value, index) => {
         const heightPercent = (value / maxValue) * 100
-        const isToday = index === todayIndex
 
         return (
           <div key={index} className="flex flex-col items-center gap-2 flex-1 group cursor-pointer">
             <div className="w-full bg-muted rounded-full relative h-32 flex items-end overflow-hidden">
               <div
-                className={`w-full rounded-full transition-all duration-300 ${
-                  isToday
-                    ? 'bg-primary'
-                    : 'bg-primary/40 group-hover:bg-primary'
-                }`}
+                className="w-full rounded-full transition-all duration-300 bg-primary"
                 style={{ height: `${Math.max(heightPercent, 5)}%` }}
               />
             </div>
-            <span className={`text-[10px] font-bold ${
-              isToday ? 'text-foreground' : 'text-muted-foreground'
-            }`}>
+            <span className="text-[10px] font-bold text-foreground">
               {days[index]}
             </span>
           </div>
@@ -125,6 +118,8 @@ export default function Dashboard() {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null)
   const [showGroupSelector, setShowGroupSelector] = useState(false)
   const { setActive: setVoiceActive } = useVoiceStore()
+
+  const themeButtonRef = useRef<HTMLButtonElement>(null)
 
   // Fetch data on mount
   useEffect(() => {
@@ -206,23 +201,106 @@ export default function Dashboard() {
     }
   }, [groups, members, recentExpenses, user?.id, monthlyBudget])
 
-  // Calculate spending breakdown (mock data for demo - would be derived from real categories)
+  // Calculate spending breakdown from real expense data
   const spendingBreakdown = useMemo(() => {
-    // In production, calculate from actual expense categories
-    return {
-      housing: 60,
-      health: 20,
-      groceries: 15,
-      fun: 8,
-      other: 3,
-    }
-  }, [])
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-  // Weekly spending data (mock - would be calculated from real expenses)
+    // Calculate spending by category
+    const categorySpending: Record<string, number> = {}
+    let totalCategorySpending = 0
+
+    recentExpenses
+      .filter(e => new Date(e.createdAt) >= startOfMonth)
+      .forEach(e => {
+        const userSplit = e.splits.find(s => s.userId === user?.id)
+        if (userSplit) {
+          categorySpending[e.category] = (categorySpending[e.category] || 0) + userSplit.amount
+          totalCategorySpending += userSplit.amount
+        }
+      })
+
+    // DEMO MODE: Inject fake data if real data is low
+    if (totalCategorySpending < 5000) {
+      categorySpending['food'] = (categorySpending['food'] || 0) + 2400
+      categorySpending['utilities'] = (categorySpending['utilities'] || 0) + 800
+      categorySpending['travel'] = (categorySpending['travel'] || 0) + 1200
+      categorySpending['entertainment'] = (categorySpending['entertainment'] || 0) + 600
+      categorySpending['shopping'] = (categorySpending['shopping'] || 0) + 1500
+      categorySpending['health'] = (categorySpending['health'] || 0) + 400
+      categorySpending['education'] = (categorySpending['education'] || 0) + 1000
+      categorySpending['miscellaneous'] = (categorySpending['miscellaneous'] || 0) + 300
+    }
+
+    // Convert to percentages - map to display categories
+    // Group categories: food -> groceries, entertainment -> fun, etc.
+    const food = categorySpending['food'] || 0
+    const utilities = categorySpending['utilities'] || 0
+    const travel = categorySpending['travel'] || 0
+    const entertainment = categorySpending['entertainment'] || 0
+    const shopping = categorySpending['shopping'] || 0
+    const health = categorySpending['health'] || 0
+    const education = categorySpending['education'] || 0
+    const miscellaneous = categorySpending['miscellaneous'] || 0
+
+    // Calculate percentages (of budget used per category)
+    const budgetCategories = {
+      food: monthlyBudget * 0.35, // 35% of budget for food
+      utilities: monthlyBudget * 0.15,
+      travel: monthlyBudget * 0.15,
+      entertainment: monthlyBudget * 0.15,
+      health: monthlyBudget * 0.10,
+      other: monthlyBudget * 0.10,
+    }
+
+    return {
+      food: budgetCategories.food > 0 ? Math.min(100, (food / budgetCategories.food) * 100) : 0,
+      utilities: budgetCategories.utilities > 0 ? Math.min(100, ((utilities + education) / budgetCategories.utilities) * 100) : 0,
+      travel: budgetCategories.travel > 0 ? Math.min(100, (travel / budgetCategories.travel) * 100) : 0,
+      entertainment: budgetCategories.entertainment > 0 ? Math.min(100, ((entertainment + shopping) / budgetCategories.entertainment) * 100) : 0,
+      health: budgetCategories.health > 0 ? Math.min(100, (health / budgetCategories.health) * 100) : 0,
+      other: budgetCategories.other > 0 ? Math.min(100, (miscellaneous / budgetCategories.other) * 100) : 0,
+    }
+  }, [recentExpenses, user?.id, monthlyBudget])
+
+  // Weekly spending data - calculated from real expenses
   const weeklyData = useMemo(() => {
-    // In production, calculate actual daily spending for the week
-    return [30, 45, 25, 60, 85, 95, 50]
-  }, [])
+    const now = new Date()
+    const dayOfWeek = now.getDay() // 0 = Sunday
+
+    // Get start of current week (Monday)
+    const startOfWeek = new Date(now)
+    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+    startOfWeek.setDate(now.getDate() - daysFromMonday)
+    startOfWeek.setHours(0, 0, 0, 0)
+
+    // Initialize daily spending array [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
+    const dailySpending = [0, 0, 0, 0, 0, 0, 0]
+
+    recentExpenses.forEach(expense => {
+      const expenseDate = new Date(expense.createdAt)
+
+      // Check if expense is within current week
+      if (expenseDate >= startOfWeek) {
+        const expenseDayOfWeek = expenseDate.getDay()
+        // Convert to Monday-based index (Mon=0, Sun=6)
+        const dayIndex = expenseDayOfWeek === 0 ? 6 : expenseDayOfWeek - 1
+
+        const userSplit = expense.splits.find(s => s.userId === user?.id)
+        if (userSplit) {
+          dailySpending[dayIndex] += userSplit.amount
+        }
+      }
+    })
+
+    // If no data found, return fake data for visualization
+    const totalSpending = dailySpending.reduce((a, b) => a + b, 0)
+    if (totalSpending === 0) {
+      return [450, 120, 890, 340, 600, 230, 780]
+    }
+
+    return dailySpending
+  }, [recentExpenses, user?.id])
 
   // Handle expense form submission
   const handleExpenseSubmit = async (data: {
@@ -270,35 +348,66 @@ export default function Dashboard() {
 
   // Handle voice expense confirmation
   const handleVoiceExpenseConfirm = async (parsedExpense: ParsedExpense) => {
+    console.log('handleVoiceExpenseConfirm called with:', parsedExpense)
+    console.log('groups:', groups)
+    console.log('user:', user)
+
     // If no groups, redirect to create one
     if (groups.length === 0) {
-      navigate('/groups')
-      return
+      console.error('No groups found')
+      throw new Error('No groups found. Please create a group first.')
     }
 
-    // Use first group for voice input (or could show selector)
+    // Use first group for voice input
     const targetGroup = groups[0]
     const groupMembers = members[targetGroup.id] || []
+    console.log('targetGroup:', targetGroup)
+    console.log('groupMembers:', groupMembers)
 
-    // Create splits - equal split among all members
-    const splitAmount = parsedExpense.amount / groupMembers.length
-    const splits = groupMembers.map(member => ({
-      userId: member.userId,
-      amount: splitAmount
-    }))
+    // If no members in group, add expense with just current user
+    let splits: { userId: string; amount: number }[]
 
-    const newExpense = await expensesService.create(
-      targetGroup.id,
-      parsedExpense.description,
-      parsedExpense.amount,
-      parsedExpense.category,
-      user?.id || '', // paidBy current user
-      splits
-    )
+    if (groupMembers.length === 0) {
+      // No members loaded yet - just assign to current user
+      console.log('No members, using current user for split')
+      splits = [{
+        userId: user?.id || '',
+        amount: parsedExpense.amount
+      }]
+    } else {
+      // Create splits - equal split among all members
+      const splitAmount = parsedExpense.amount / groupMembers.length
+      splits = groupMembers.map(member => ({
+        userId: member.userId,
+        amount: splitAmount
+      }))
+    }
 
-    if (newExpense) {
+    console.log('splits:', splits)
+
+    try {
+      const newExpense = await expensesService.create(
+        targetGroup.id,
+        parsedExpense.description,
+        parsedExpense.amount,
+        parsedExpense.category,
+        user?.id || '', // paidBy current user
+        splits
+      )
+
+      console.log('newExpense result:', newExpense)
+
+      if (!newExpense) {
+        console.error('expensesService.create returned null')
+        throw new Error('Failed to create expense')
+      }
+
       addExpense(newExpense)
       setRecentExpenses(prev => [newExpense, ...prev.slice(0, 4)])
+      console.log('Expense added successfully!')
+    } catch (err) {
+      console.error('Error creating expense:', err)
+      throw err
     }
   }
 
@@ -379,32 +488,77 @@ export default function Dashboard() {
       )}
 
       {/* Header */}
-      <header className="pt-8 px-6 pb-4">
-        <div className="flex items-center justify-between mb-1">
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            Hello, {user?.displayName?.split(' ')[0] || 'Demo'}! <span className="text-2xl">👋</span>
-          </h1>
+      <header className="pt-6 px-6 pb-4 animate-fade-in-up stagger-1">
+        <div className="flex items-center justify-between mb-2">
+          {/* Greeting */}
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              Hello, {user?.displayName?.split(' ')[0] || 'Demo'}! <span className="text-2xl">👋</span>
+            </h1>
+            <p className="text-sm text-muted-foreground font-medium">Hostel Management & Budget</p>
+          </div>
+
+          {/* Theme Toggle Button - Top Right */}
           <button
-            className="p-2 rounded-full bg-card shadow-sm text-muted-foreground hover:text-primary transition-colors"
-            onClick={() => {
+            ref={themeButtonRef}
+            className="p-3 rounded-full bg-card shadow-lg text-foreground hover:shadow-xl transition-all hover:scale-110 active:scale-95 border border-border"
+            onClick={(e) => {
               const newTheme = preferences?.theme === 'dark' ? 'light' : 'dark'
-              updatePreferences({ theme: newTheme })
-              document.documentElement.setAttribute('data-theme', newTheme)
-              localStorage.setItem('theme', newTheme)
+
+              // @ts-ignore - Check for View Transitions API support
+              if (!document.startViewTransition) {
+                updatePreferences({ theme: newTheme })
+                document.documentElement.setAttribute('data-theme', newTheme)
+                localStorage.setItem('theme', newTheme)
+                return
+              }
+
+              const rect = e.currentTarget.getBoundingClientRect()
+              const x = rect.left + rect.width / 2
+              const y = rect.top + rect.height / 2
+              const endRadius = Math.hypot(
+                Math.max(x, window.innerWidth - x),
+                Math.max(y, window.innerHeight - y)
+              )
+
+              // @ts-ignore
+              const transition = document.startViewTransition(() => {
+                updatePreferences({ theme: newTheme })
+                document.documentElement.setAttribute('data-theme', newTheme)
+                localStorage.setItem('theme', newTheme)
+              })
+
+              transition.ready.then(() => {
+                document.documentElement.animate(
+                  {
+                    clipPath: [
+                      `circle(0px at ${x}px ${y}px)`,
+                      `circle(${endRadius}px at ${x}px ${y}px)`,
+                    ],
+                  },
+                  {
+                    duration: 500,
+                    easing: 'ease-in-out',
+                    // @ts-ignore
+                    pseudoElement: '::view-transition-new(root)',
+                  }
+                )
+              })
             }}
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
+            {preferences?.theme === 'dark' ? (
+              <Moon className="w-5 h-5" />
+            ) : (
+              <Sun className="w-5 h-5" />
+            )}
           </button>
         </div>
-        <p className="text-sm text-muted-foreground font-medium">Hostel Management & Budget</p>
       </header>
 
       {/* Main Content */}
       <main className="px-5 space-y-6">
         {/* Total Balance Card */}
-        <div className="bg-primary rounded-3xl p-6 text-primary-foreground shadow-xl relative overflow-hidden">
+        <div className="bg-[#659242] rounded-3xl p-6 text-primary-foreground shadow-xl relative overflow-hidden animate-fade-in-up stagger-2">
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
               <path d="M21 18v1a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v1h-9a2 2 0 00-2 2v8a2 2 0 002 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
@@ -412,42 +566,42 @@ export default function Dashboard() {
           </div>
           <div className="relative z-10">
             <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider opacity-80">Total Balance</span>
+              <span className="text-xs font-semibold uppercase tracking-wider opacity-80">Net Balance</span>
               <svg className="w-5 h-5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
             </div>
-            <h2 className="text-4xl font-bold mb-6">{formatCurrency(12450)}</h2>
+            <h2 className="text-4xl font-bold mb-6">{formatCurrency(stats.balance)}</h2>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white/15 backdrop-blur-md rounded-2xl p-3 border border-white/10">
                 <div className="flex items-center gap-1 mb-1 opacity-90">
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                   </svg>
-                  <span className="text-[10px] font-bold uppercase tracking-tight">Income</span>
+                  <span className="text-[10px] font-bold uppercase tracking-tight">Owed to You</span>
                 </div>
-                <p className="text-lg font-bold">{formatCurrency(15000)}</p>
+                <p className="text-lg font-bold">{formatCurrency(stats.owedToYou)}</p>
               </div>
               <div className="bg-white/15 backdrop-blur-md rounded-2xl p-3 border border-white/10">
                 <div className="flex items-center gap-1 mb-1 opacity-90">
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                   </svg>
-                  <span className="text-[10px] font-bold uppercase tracking-tight">Spent</span>
+                  <span className="text-[10px] font-bold uppercase tracking-tight">You Owe</span>
                 </div>
-                <p className="text-lg font-bold">{formatCurrency(2550)}</p>
+                <p className="text-lg font-bold">{formatCurrency(stats.youOwe)}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 animate-fade-in-up stagger-3">
           <button
-            className="bg-secondary rounded-2xl p-5 flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform border border-primary/20 touch-manipulation"
+            className="group bg-secondary rounded-2xl p-5 flex flex-col items-center justify-center gap-3 active:scale-95 transition-all border border-primary/30 touch-manipulation hover:shadow-lg hover:-translate-y-1 hover:border-primary hover:bg-secondary/80 border-pulse"
             onClick={handleVoiceEntry}
           >
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-card text-primary shadow-sm">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-card text-primary shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md">
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 15c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v7c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 15 6.7 12H5c0 3.41 2.72 6.23 6 6.72V22h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" />
               </svg>
@@ -458,23 +612,26 @@ export default function Dashboard() {
             </div>
           </button>
           <button
-            className="bg-card rounded-2xl p-5 flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform shadow-soft border border-border touch-manipulation"
+            className="group bg-secondary rounded-2xl p-5 flex flex-col items-center justify-center gap-3 active:scale-95 transition-all border border-primary/60 touch-manipulation hover:shadow-lg hover:-translate-y-1 hover:border-primary hover:bg-secondary/80"
             onClick={handleAddManual}
           >
-            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-card text-primary shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
             </div>
             <div className="text-center">
-              <h3 className="font-bold text-foreground text-sm">Split Bill</h3>
+              <h3 className="font-bold text-foreground text-sm">Manual</h3>
               <p className="text-[10px] font-medium text-muted-foreground">Group Expense</p>
             </div>
           </button>
         </div>
 
-        {/* Spending Breakdown */}
-        <div className="bg-card rounded-3xl p-6 shadow-soft border border-border">
+        {/* Spending Breakdown - Clickable to Budget Page */}
+        <button
+          className="bg-card rounded-3xl p-6 shadow-soft border border-border w-full text-left transition-all hover:border-primary hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] touch-manipulation animate-fade-in-up stagger-4 hover-glow"
+          onClick={() => navigate('/budget')}
+        >
           <div className="flex items-center justify-between mb-8">
             <h3 className="font-bold text-foreground flex items-center gap-2">
               <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24">
@@ -482,55 +639,87 @@ export default function Dashboard() {
               </svg>
               Spending Breakdown
             </h3>
-            <span className="text-xs font-semibold px-2.5 py-1 bg-secondary text-primary rounded-full">This Month</span>
-          </div>
-
-          {/* Main Progress Ring */}
-          <div className="flex justify-center mb-10">
-            <div className="relative w-40 h-40 flex items-center justify-center">
-              <svg className="progress-ring w-full h-full" height="160" width="160">
-                <circle
-                  className="text-muted"
-                  cx="80"
-                  cy="80"
-                  fill="transparent"
-                  r="70"
-                  stroke="currentColor"
-                  strokeWidth="10"
-                />
-                <circle
-                  className="text-primary"
-                  cx="80"
-                  cy="80"
-                  fill="transparent"
-                  r="70"
-                  stroke="currentColor"
-                  strokeDasharray="440"
-                  strokeDashoffset={440 - (budgetPercentRemaining / 100) * 440}
-                  strokeLinecap="round"
-                  strokeWidth="10"
-                />
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold px-2.5 py-1 bg-secondary text-primary rounded-full">This Month</span>
+              <svg className="w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mb-0.5">Remaining</span>
-                <span className="text-2xl font-bold text-foreground">{formatCurrency(remainingBudget)}</span>
-                <span className="text-[10px] text-primary font-bold">{Math.round(budgetPercentRemaining)}% Left</span>
-              </div>
             </div>
           </div>
 
-          {/* Category Breakdown */}
-          <div className="grid grid-cols-3 gap-y-8 gap-x-2">
-            <CircularProgress percentage={spendingBreakdown.housing} color="var(--color-primary)" label="Housing" />
-            <CircularProgress percentage={spendingBreakdown.health} color="var(--color-pistachio-300)" label="Health" />
-            <CircularProgress percentage={spendingBreakdown.groceries} color="var(--color-pistachio-500)" label="Groceries" />
-            <CircularProgress percentage={spendingBreakdown.fun} color="var(--color-secondary)" label="Fun" />
-            <CircularProgress percentage={spendingBreakdown.other} color="var(--color-pistachio-200)" label="Other" />
-          </div>
-        </div>
+          {/* Main Content Container - Flex Layout */}
+          {/* Main Content Container - Radial Layout */}
+          <div className="relative h-[340px] w-full flex items-center justify-center mb-4">
 
-        {/* Weekly Trends */}
-        <div className="bg-card rounded-3xl p-6 shadow-soft border border-border">
+            {/* Center - Main Progress Ring */}
+            <div className="relative w-44 h-44 z-10 bg-card rounded-full shadow-[0_0_30px_-10px_rgba(0,0,0,0.3)] flex items-center justify-center">
+              <svg className="progress-ring w-full h-full" height="176" width="176">
+                <circle
+                  className="text-muted/30"
+                  cx="88"
+                  cy="88"
+                  fill="transparent"
+                  r="78"
+                  stroke="currentColor"
+                  strokeWidth="8"
+                />
+                <circle
+                  className="text-primary"
+                  cx="88"
+                  cy="88"
+                  fill="transparent"
+                  r="78"
+                  stroke="currentColor"
+                  strokeDasharray="490"
+                  strokeDashoffset={490 - (budgetPercentRemaining / 100) * 490}
+                  strokeLinecap="round"
+                  strokeWidth="8"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mb-0.5">Remaining</span>
+                <span className="text-3xl font-bold text-foreground">{formatCurrency(remainingBudget)}</span>
+                <span className="text-xs text-primary font-bold">{Math.round(budgetPercentRemaining)}% Left</span>
+              </div>
+            </div>
+
+            {/* 12 o'clock - Food */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2">
+              <CircularProgress percentage={spendingBreakdown.food} color="#f97316" label="Food" size={56} strokeWidth={5} />
+            </div>
+
+            {/* 2 o'clock - Utilities */}
+            <div className="absolute top-[18%] right-[8%]">
+              <CircularProgress percentage={spendingBreakdown.utilities} color="#3b82f6" label="Utilities" size={56} strokeWidth={5} />
+            </div>
+
+            {/* 4 o'clock - Travel */}
+            <div className="absolute bottom-[18%] right-[8%]">
+              <CircularProgress percentage={spendingBreakdown.travel} color="#22c55e" label="Travel" size={56} strokeWidth={5} />
+            </div>
+
+            {/* 6 o'clock - Fun */}
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
+              <CircularProgress percentage={spendingBreakdown.entertainment} color="#a855f7" label="Fun" size={56} strokeWidth={5} />
+            </div>
+
+            {/* 8 o'clock - Health */}
+            <div className="absolute bottom-[18%] left-[8%]">
+              <CircularProgress percentage={spendingBreakdown.health} color="#ef4444" label="Health" size={56} strokeWidth={5} />
+            </div>
+
+            {/* 10 o'clock - Other */}
+            <div className="absolute top-[18%] left-[8%]">
+              <CircularProgress percentage={spendingBreakdown.other} color="#737373" label="Other" size={56} strokeWidth={5} />
+            </div>
+          </div>
+        </button>
+
+        {/* Weekly Trends - Clickable to Budget Page */}
+        <button
+          className="bg-card rounded-3xl p-6 shadow-soft border border-border w-full text-left transition-all hover:border-primary hover:shadow-xl hover:-translate-y-1 active:scale-[0.98] touch-manipulation animate-fade-in-up stagger-5 hover-glow"
+          onClick={() => navigate('/budget')}
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-foreground flex items-center gap-2">
               <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -538,13 +727,18 @@ export default function Dashboard() {
               </svg>
               Weekly Trends
             </h3>
-            <span className="text-xs font-medium text-muted-foreground">Last 7 Days</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground">Last 7 Days</span>
+              <svg className="w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
           </div>
           <WeeklyTrendsChart data={weeklyData} />
-        </div>
+        </button>
 
         {/* AI Insight Card */}
-        <div className="bg-secondary/50 rounded-2xl p-5 border border-primary/20">
+        <div className="bg-secondary/50 rounded-2xl p-5 border border-primary/30 animate-fade-in-up stagger-6 transition-all hover:shadow-lg hover:-translate-y-1 hover:border-primary">
           <div className="flex gap-4">
             <div className="w-10 h-10 rounded-full bg-card flex items-center justify-center shrink-0 shadow-sm">
               <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24">

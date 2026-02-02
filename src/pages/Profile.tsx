@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Phone,
   CreditCard,
@@ -60,7 +58,6 @@ export default function Profile() {
       } else if (editField === 'phone') {
         await authService.updateProfile(user.id, { phone: editValue })
       }
-      // Refresh page to get updated data
       window.location.reload()
     } catch (error) {
       console.error('Failed to save:', error)
@@ -85,14 +82,12 @@ export default function Profile() {
       ...preferences,
       theme: newTheme,
     })
-    // Apply theme to document
     document.documentElement.setAttribute('data-theme', newTheme)
-    // Persist to localStorage
     localStorage.setItem('theme', newTheme)
   }
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="max-w-md mx-auto space-y-4 pb-24 px-4">
       {/* Edit Modal */}
       {editField && (
         <div
@@ -100,7 +95,7 @@ export default function Profile() {
           onClick={() => setEditField(null)}
         >
           <div
-            className="bg-card rounded-lg p-6 w-[90%] max-w-md space-y-4"
+            className="bg-card rounded-2xl p-6 w-[90%] max-w-md space-y-4 shadow-soft"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
@@ -149,201 +144,155 @@ export default function Profile() {
       )}
 
       {/* Profile Header */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={user?.avatarUrl} />
-              <AvatarFallback className="text-2xl">
-                {user?.displayName?.charAt(0) || 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <h2 className="text-xl font-bold">{user?.displayName || 'User'}</h2>
-              <p className="text-muted-foreground">{user?.email}</p>
-              <Button
-                variant="link"
-                className="p-0 h-auto text-primary"
-                onClick={() => openEdit('profile')}
-              >
-                Edit Profile
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <section className="bg-card rounded-2xl p-5 flex items-center shadow-soft animate-fade-in-up stagger-1 transition-all hover:shadow-xl hover:-translate-y-1 hover:border-primary border border-transparent">
+        <div className="h-16 w-16 rounded-full bg-secondary flex items-center justify-center text-primary text-2xl font-semibold mr-4 shrink-0">
+          {user?.displayName?.charAt(0) || 'D'}
+        </div>
+        <div className="flex-1">
+          <h2 className="text-lg font-bold text-foreground">{user?.displayName || 'Demo User'}</h2>
+          <p className="text-sm text-muted-foreground mb-1">{user?.email || 'demo@example.com'}</p>
+          <button
+            className="text-xs font-medium text-primary hover:text-primary-hover transition-colors"
+            onClick={() => openEdit('profile')}
+          >
+            Edit Profile
+          </button>
+        </div>
+      </section>
 
       {/* Payment Methods */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-muted-foreground">
-            Payment Methods
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <button
-            className="w-full flex items-center justify-between p-3 -mx-3 rounded-lg hover:bg-surface-hover transition-colors"
-            onClick={() => openEdit('upi')}
-          >
-            <div className="flex items-center gap-3">
-              <CreditCard className="h-5 w-5 text-muted-foreground" />
-              <div className="text-left">
-                <p className="font-medium">UPI ID</p>
-                <p className="text-sm text-muted-foreground">
-                  {user?.upiId || 'Not set'}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-primary">Edit</span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-          </button>
+      <section className="bg-card rounded-2xl p-5 shadow-soft space-y-4 animate-fade-in-up stagger-2 transition-all hover:shadow-xl hover:-translate-y-1 border border-transparent hover:border-primary/50">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          Payment Methods
+        </h3>
 
-          <button
-            className="w-full flex items-center justify-between p-3 -mx-3 rounded-lg hover:bg-surface-hover transition-colors"
-            onClick={() => openEdit('phone')}
-          >
-            <div className="flex items-center gap-3">
-              <Phone className="h-5 w-5 text-muted-foreground" />
-              <div className="text-left">
-                <p className="font-medium">Phone Number</p>
-                <p className="text-sm text-muted-foreground">
-                  {user?.phone || 'Not set'}
-                </p>
-              </div>
+        <button
+          className="w-full flex items-center justify-between"
+          onClick={() => openEdit('upi')}
+        >
+          <div className="flex items-center gap-3">
+            <CreditCard className="h-5 w-5 text-muted-foreground" />
+            <div className="text-left">
+              <p className="text-sm font-semibold text-foreground">UPI ID</p>
+              <p className="text-xs text-muted-foreground">{user?.upiId || 'Not set'}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-primary">Edit</span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="flex items-center text-xs text-muted-foreground hover:text-primary transition-colors">
+            Edit <ChevronRight className="h-4 w-4 ml-1" />
+          </div>
+        </button>
+
+        <button
+          className="w-full flex items-center justify-between"
+          onClick={() => openEdit('phone')}
+        >
+          <div className="flex items-center gap-3">
+            <Phone className="h-5 w-5 text-muted-foreground" />
+            <div className="text-left">
+              <p className="text-sm font-semibold text-foreground">Phone Number</p>
+              <p className="text-xs text-muted-foreground">{user?.phone || 'Not set'}</p>
             </div>
-          </button>
-        </CardContent>
-      </Card>
+          </div>
+          <div className="flex items-center text-xs text-muted-foreground hover:text-primary transition-colors">
+            Edit <ChevronRight className="h-4 w-4 ml-1" />
+          </div>
+        </button>
+      </section>
 
       {/* Preferences */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-muted-foreground">
-            Preferences
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <div className="flex items-center justify-between p-3 -mx-3 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Moon className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Dark Mode</p>
-                <p className="text-sm text-muted-foreground">
-                  {preferences?.theme === 'dark' ? 'Enabled' : 'Disabled'}
-                </p>
-              </div>
-            </div>
-            <Switch
-              checked={preferences?.theme === 'dark'}
-              onCheckedChange={toggleTheme}
-            />
-          </div>
+      <section className="bg-card rounded-2xl p-5 shadow-soft space-y-4 animate-fade-in-up stagger-3 transition-all hover:shadow-xl hover:-translate-y-1 border border-transparent hover:border-primary/50">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          Preferences
+        </h3>
 
-          <div className="flex items-center justify-between p-3 -mx-3 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Globe className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Language</p>
-                <p className="text-sm text-muted-foreground">English</p>
-              </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Moon className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Dark Mode</p>
+              <p className="text-xs text-muted-foreground">
+                {preferences?.theme === 'dark' ? 'Enabled' : 'Disabled'}
+              </p>
             </div>
-            <span className="text-sm text-muted-foreground">Default</span>
           </div>
+          <Switch
+            checked={preferences?.theme === 'dark'}
+            onCheckedChange={toggleTheme}
+          />
+        </div>
 
-          <div className="flex items-center justify-between p-3 -mx-3 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Bell className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Notifications</p>
-                <p className="text-sm text-muted-foreground">
-                  {preferences?.notifications ? 'Enabled' : 'Disabled'}
-                </p>
-              </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Globe className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Language</p>
+              <p className="text-xs text-muted-foreground">English</p>
             </div>
-            <Switch
-              checked={preferences?.notifications ?? true}
-              onCheckedChange={toggleNotifications}
-            />
           </div>
-        </CardContent>
-      </Card>
+          <span className="text-xs text-muted-foreground">Default</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Bell className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Notifications</p>
+              <p className="text-xs text-muted-foreground">
+                {preferences?.notifications ? 'Enabled' : 'Disabled'}
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={preferences?.notifications ?? true}
+            onCheckedChange={toggleNotifications}
+          />
+        </div>
+      </section>
 
       {/* Privacy & Security */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-muted-foreground">
-            Privacy & Security
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <div className="flex items-center justify-between p-3 -mx-3 rounded-lg opacity-50">
-            <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5 text-muted-foreground" />
-              <p className="font-medium">Change Password</p>
-            </div>
-            <span className="text-xs text-muted-foreground">Coming soon</span>
-          </div>
+      <section className="bg-card rounded-2xl p-5 shadow-soft space-y-4 animate-fade-in-up stagger-4 transition-all hover:shadow-xl hover:-translate-y-1 border border-transparent hover:border-primary/50">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          Privacy & Security
+        </h3>
 
-          <div className="flex items-center justify-between p-3 -mx-3 rounded-lg opacity-50">
-            <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Two-Factor Auth</p>
-                <p className="text-sm text-muted-foreground">Off</p>
-              </div>
-            </div>
-            <span className="text-xs text-muted-foreground">Coming soon</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Shield className="h-5 w-5 text-muted-foreground" />
+            <p className="text-sm font-semibold text-foreground">Change Password</p>
           </div>
-        </CardContent>
-      </Card>
+          <span className="text-xs text-muted-foreground/50">Coming soon</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Shield className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Two-Factor Auth</p>
+              <p className="text-xs text-muted-foreground">Off</p>
+            </div>
+          </div>
+          <span className="text-xs text-muted-foreground/50">Coming soon</span>
+        </div>
+      </section>
 
       {/* App Info */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">SplitUp v1.0.0</p>
-            <div className="flex justify-center gap-4 text-sm">
-              <Button
-                variant="link"
-                className="p-0 h-auto"
-                onClick={() => window.open('#', '_blank')}
-              >
-                Privacy Policy
-              </Button>
-              <Button
-                variant="link"
-                className="p-0 h-auto"
-                onClick={() => window.open('#', '_blank')}
-              >
-                Terms of Service
-              </Button>
-              <Button
-                variant="link"
-                className="p-0 h-auto"
-                onClick={() => window.open('#', '_blank')}
-              >
-                Help Center
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <section className="bg-card rounded-2xl p-5 text-center shadow-soft animate-fade-in-up stagger-5 transition-all hover:shadow-xl hover:-translate-y-1 border border-transparent hover:border-primary/50">
+        <p className="text-xs text-muted-foreground mb-4">SplitUp v1.0.0</p>
+        <div className="flex justify-center gap-6 text-xs font-medium text-primary">
+          <a href="#" className="hover:underline">Privacy Policy</a>
+          <a href="#" className="hover:underline">Terms of Service</a>
+          <a href="#" className="hover:underline">Help Center</a>
+        </div>
+      </section>
 
-      {/* Logout Button */}
-      <Button
-        variant="outline"
-        className="w-full text-danger hover:text-danger hover:bg-danger/10"
+      {/* Sign Out Button */}
+      <button
+        className="w-full bg-danger/5 border border-danger/20 rounded-xl py-3 flex items-center justify-center gap-2 text-danger font-medium text-sm transition-all hover:bg-danger/15 hover:border-danger/40 hover:-translate-y-0.5 active:scale-[0.97] animate-fade-in-up stagger-6"
         onClick={handleLogout}
       >
-        <LogOut className="h-4 w-4 mr-2" />
+        <LogOut className="h-4 w-4" />
         Sign Out
-      </Button>
+      </button>
     </div>
   )
 }

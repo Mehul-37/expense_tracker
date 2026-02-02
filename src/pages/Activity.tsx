@@ -143,7 +143,7 @@ export default function Activity() {
   return (
     <div className="space-y-6 pb-24">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-fade-in-up stagger-1">
         <div>
           <h1 className="text-2xl font-bold">Activity</h1>
           <p className="text-muted-foreground">Your expense history</p>
@@ -155,7 +155,7 @@ export default function Activity() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 animate-fade-in-up stagger-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -176,7 +176,7 @@ export default function Activity() {
       </div>
 
       {/* Quick Filters */}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar">
+      <div className="flex gap-2 overflow-x-auto no-scrollbar animate-fade-in-up stagger-3">
         {quickFilters.map((filter) => (
           <Button
             key={filter}
@@ -203,7 +203,7 @@ export default function Activity() {
       )}
 
       {/* Timeline */}
-      <div className="space-y-4">
+      <div className="space-y-4 animate-fade-in-up stagger-4">
         {/* Today Section */}
         {groupedExpenses.today.length > 0 && (
           <div className="space-y-3">
@@ -245,7 +245,7 @@ function ActivityCard({ expense, currentUserId }: { expense: Expense; currentUse
   const isSettled = userSplit?.isPaid || isPaidByUser
 
   return (
-    <Card className="hover:bg-surface-hover transition-colors">
+    <Card className="hover:bg-surface-hover transition-all hover:-translate-y-1 hover:shadow-xl hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">

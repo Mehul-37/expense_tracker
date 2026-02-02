@@ -28,7 +28,7 @@ export default function BottomNav() {
             className={({ isActive }) =>
               cn(
                 // Touch-optimized: min 48px height, larger tap area
-                'flex flex-col items-center justify-center gap-1',
+                'group flex flex-col items-center justify-center gap-1',
                 'min-h-[56px] min-w-[56px] px-3 py-2',
                 'rounded-xl transition-all duration-200',
                 // Remove tap highlight for custom feedback
@@ -44,8 +44,8 @@ export default function BottomNav() {
               <>
                 <Icon
                   className={cn(
-                    'h-5 w-5 md:h-6 md:w-6 transition-transform duration-200 flex-shrink-0',
-                    isActive && 'scale-110'
+                    'h-5 w-5 md:h-6 md:w-6 transition-all duration-300 flex-shrink-0',
+                    isActive ? 'scale-110' : 'group-hover:scale-115 group-hover:text-primary'
                   )}
                 />
                 <span className={cn(

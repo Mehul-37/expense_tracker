@@ -40,8 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Check for existing session on mount
     const initAuth = async () => {
-      // Load theme from localStorage or default to 'light'
-      const savedTheme = (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
+      // Load theme from localStorage or default to 'dark'
+      const savedTheme = (localStorage.getItem('theme') as 'light' | 'dark') || 'dark'
 
       // Apply theme to document
       document.documentElement.setAttribute('data-theme', savedTheme)

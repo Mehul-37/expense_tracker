@@ -127,7 +127,7 @@ export default function Groups() {
   return (
     <div className="space-y-6 pb-24">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between animate-fade-in-up stagger-1">
         <div>
           <h1 className="text-2xl font-bold">Groups</h1>
           <p className="text-muted-foreground">Manage your expense groups</p>
@@ -252,13 +252,14 @@ export default function Groups() {
 
       {/* Groups List */}
       {groups.length > 0 ? (
-        <div className="space-y-3">
-          {groups.map((group) => {
+        <div className="space-y-3 animate-fade-in-up stagger-2">
+          {groups.map((group, index) => {
             const balance = getUserBalance(group)
             return (
               <Card
                 key={group.id}
-                className="cursor-pointer hover:bg-surface-hover transition-colors"
+                className="cursor-pointer hover:bg-surface-hover transition-all hover:-translate-y-1 hover:shadow-xl hover:border-primary/50 hover-glow"
+                style={{ animationDelay: `${index * 0.08}s` }}
                 onClick={() => navigate(`/groups/${group.id}`)}
               >
                 <CardContent className="p-4">

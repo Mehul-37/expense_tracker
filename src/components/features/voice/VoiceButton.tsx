@@ -29,24 +29,26 @@ export default function VoiceButton({ onExpenseConfirm }: VoiceButtonProps) {
       {/* Floating Voice Button */}
       <motion.button
         className={cn(
-          'fixed bottom-24 right-4 z-40 h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-colors',
+          'fixed bottom-24 right-4 z-40 h-14 w-14 rounded-full shadow-xl flex items-center justify-center transition-all',
           isActive
-            ? 'bg-danger hover:bg-danger/90'
-            : 'bg-primary hover:bg-primary-hover'
+            ? 'bg-danger hover:bg-danger/90 shadow-danger/30'
+            : 'bg-primary hover:bg-primary-hover shadow-primary/40 hover:shadow-primary/60 hover:shadow-2xl'
         )}
         onClick={handleClick}
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.9 }}
+        whileHover={{ scale: 1.1 }}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
       >
         {isActive ? (
           <X className="h-6 w-6 text-white" />
         ) : (
           <>
             <Mic className="h-6 w-6 text-white" />
-            {/* Pulse animation */}
-            <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-25" />
+            {/* Pulse animation - more prominent */}
+            <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-40" />
+            <span className="absolute -inset-1 rounded-full bg-primary/20 animate-pulse" />
           </>
         )}
       </motion.button>
@@ -134,17 +136,36 @@ function VoiceOverlay({ onClose, onExpenseConfirm }: VoiceOverlayProps) {
   }, [stopListening, transcript, interimTranscript])
 
   const handleConfirm = async () => {
-    if (!parsedExpense || !onExpenseConfirm) return
+    console.log('handleConfirm called')
+    console.log('parsedExpense:', parsedExpense)
+    console.log('onExpenseConfirm:', typeof onExpenseConfirm)
+
+    if (!parsedExpense) {
+      console.error('No parsedExpense!')
+      setErrorMessage('No expense data available.')
+      setState('error')
+      return
+    }
+
+    if (!onExpenseConfirm) {
+      console.error('No onExpenseConfirm callback!')
+      setErrorMessage('Configuration error. Please try again.')
+      setState('error')
+      return
+    }
 
     setIsSubmitting(true)
     try {
+      console.log('Calling onExpenseConfirm...')
       await onExpenseConfirm(parsedExpense)
+      console.log('onExpenseConfirm completed successfully')
       setState('success')
       setTimeout(() => {
         onClose()
       }, 1500)
     } catch (err) {
-      setErrorMessage('Failed to add expense. Please try again.')
+      console.error('onExpenseConfirm error:', err)
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to add expense. Please try again.')
       setState('error')
     } finally {
       setIsSubmitting(false)

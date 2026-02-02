@@ -3,7 +3,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY
 
 if (!apiKey) {
-  console.warn('Gemini API key not found')
+  console.warn('Gemini API key not found. Set VITE_GEMINI_API_KEY in .env')
+} else {
+  console.log('Gemini API key loaded:', apiKey.substring(0, 10) + '...')
 }
 
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null
@@ -178,6 +180,7 @@ export async function parseExpenseFromVoice(transcript: string): Promise<Expense
   }
 
   try {
+    console.log('Calling Gemini API with transcript:', transcript)
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
     const result = await model.generateContent([
@@ -186,6 +189,7 @@ export async function parseExpenseFromVoice(transcript: string): Promise<Expense
     ])
 
     const response = result.response.text()
+    console.log('Gemini API response:', response)
 
     // Try to extract JSON from the response
     const jsonMatch = response.match(/\{[\s\S]*\}/)
@@ -220,8 +224,14 @@ export async function parseExpenseFromVoice(transcript: string): Promise<Expense
     }
   } catch (error) {
     console.error('Gemini API error:', error)
+    console.error('Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    })
     // Fallback to local parser when API fails
     if (localResult) {
+      console.log('Using local fallback parser instead')
       return {
         success: true,
         expense: localResult,
